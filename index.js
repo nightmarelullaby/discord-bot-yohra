@@ -68,9 +68,9 @@ client.on("interactionCreate", async interaction => {
         console.log(collect.content)
         interaction.channel.send("Elegiste la opcion " + collect.content)
 
-        const index = Number(collect.content)
-
-        const url = await arrayWithResults[index - 1].url
+        const index = Number(collect.content) - 1 
+            console.log(index)
+        const url = await arrayWithResults[index].url
         
         const embedMessage = new MessageEmbed()
         .setColor(0x0099FF)
