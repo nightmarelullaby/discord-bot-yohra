@@ -4,7 +4,6 @@ const { ComponentType } = require('discord.js');
 
 
 const { createReadStream,createWriteStream } = require('fs');
-// const ytdl = require('ytdl-core');
 const play = require('play-dl');
 const { VoiceConnectionStatus, 
         joinVoiceChannel, 
@@ -15,9 +14,6 @@ const { VoiceConnectionStatus,
         StreamType,
         createAudioResource} = require('@discordjs/voice');
 const { join } = require('node:path');
-const { getInfo } = require('ytdl-core');
-
-
 
 require('dotenv').config()
 // Create a new client instance
@@ -154,15 +150,15 @@ client.on("messageCreate",message=>{
 })
 
 
-const videoRequest = async (url) => {
-    try{
-        const req = await getInfo(url)
-        const {videoDetails} = await req
-        return videoDetails;
-    }catch(error){
-        console.log(error)
-    }
-}
+// const videoRequest = async (url) => {
+//     try{
+//         const req = await getInfo(url)
+//         const {videoDetails} = await req
+//         return videoDetails;
+//     }catch(error){
+//         console.log(error)
+//     }
+// }
 const videoSearch = async (params) => {
     try{
         const searched = await play.search(params, { limit : 5 })
