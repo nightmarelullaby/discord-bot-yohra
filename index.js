@@ -70,12 +70,8 @@ client.on("interactionCreate", async interaction => {
 
         const index = Number(collect.content)
 
-        let url
-
-        const promiseUrl = new Promise((res,rej)=>{
-            res(arrayWithResults[index].url)
-        })
-        promiseUrl.then(e => let = e)
+        const url = await arrayWithResults[index].url
+        
         
         const embedMessage = new MessageEmbed()
         .setColor(0x0099FF)
