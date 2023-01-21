@@ -18,7 +18,7 @@ const { join } = require('node:path');
 require('dotenv').config()
 // Create a new client instance
 const myIntents = new Intents();
-myIntents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES,Intents.FLAGS.GUILD_MESSAGES);
+myIntents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES,Intents.FLAGS.GUILD_MESSAGES,Intents.FLAGS.GUILD_MEMBERS);
 
 const client = new Client({ intents: myIntents });
 
@@ -55,20 +55,35 @@ client.on("interactionCreate", async interaction => {
            
         })
         
-    
         await interaction.reply(messageWithResults)
         
         const filter = i => {
-            return i.content.includes("1" || "2" || "3" || "4" || "5")
+            const regex = /[12345]/ig
+            const content = i.content
+            return regex.test(content)
         };
         let collector = interaction.channel.createMessageCollector({filter,time:60000,max:1})
 
         collector.on("collect", async collect =>{
+        console.log(collect.content)
         interaction.channel.send("Elegiste la opcion " + collect.content)
 
         const index = Number(collect.content)
 
         const url = await arrayWithResults[index].url
+        
+        const embedMessage = new MessageEmbed()
+        .setColor(0x0099FF)
+        .setTitle(arrayWithResults[index].title)
+        .setURL(url)
+        .setAuthor({ name:interaction.user.username,iconURL: interaction.user.avatarURL(), url: 'https://discord.js.org' })
+        .setThumbnail("https://media.tenor.com/NCBOBzi6UdIAAAAM/2b.gif")
+        .setImage(arrayWithResults[index].thumbnails)
+        .setFooter({ text: 'Reproduciendo...', iconURL: 'https://media.tenor.com/NCBOBzi6UdIAAAAM/2b.gif' });
+    
+        
+        await interaction.editReply({content:null,embeds:[embedMessage]})
+
         let stream = await play.stream(url)
         let resource = createAudioResource(stream.stream,{
            inputType:stream.type
@@ -93,9 +108,9 @@ client.on("interactionCreate", async interaction => {
         
         const subscription = connection.subscribe(myPlayer)
 
-        if(subscription){
-            setTimeout(()=> subscription.unsubscribe(), 205_000);
-        }
+        // if(subscription){
+        //     setTimeout(()=> subscription.unsubscribe(), 205_000);
+        // }
         
 
         })
@@ -103,29 +118,6 @@ client.on("interactionCreate", async interaction => {
             interaction.channel.send("el tiempo se acabó")
         })
             
-        
-
-        
-        
-
-        // await interaction.reply({files:["https://i.ytimg.com/vi/TR3Vdo5etCQ/hqdefault.jpg?sqp=-oaymwEbCKgBEF5IVfKriqkDDggBFQAAiEIYAXABwAEG&rs=AOn4CLD0nBw9hgkPnNC_tNZNTFY95Wn53Q"]}):
-
-        
-        // const videoInfo = await videoRequest(url)
-        // const {title,video_url,author,thumbnails} = await videoInfo
-
-        // const embedMessage = new MessageEmbed()
-        // .setColor(0x0099FF)
-        // .setTitle(title)
-        // .setURL(video_url)
-        // .setAuthor({ name: author.name, iconURL: author.thumbnails[1].url, url: 'https://discord.js.org' })
-        // .setThumbnail("https://media.tenor.com/NCBOBzi6UdIAAAAM/2b.gif")
-        // .setImage(thumbnails[3].url)
-        // .setFooter({ text: 'Reproduciendo...', iconURL: 'https://media.tenor.com/NCBOBzi6UdIAAAAM/2b.gif' });
-    
-        
-        // await interaction.editReply({embeds:[embedMessage]})
-       
     }
 
    
