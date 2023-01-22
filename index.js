@@ -116,6 +116,7 @@ client.on("interactionCreate", async interaction => {
         }
         if(myPlayer._state.status == 'playing'){
             console.log("already playing something")
+            await interaction.reply("Canción añadida a la playlist.")
             return;
         }
         myPlayer.on(AudioPlayerStatus.Playing,()=> {
