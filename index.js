@@ -93,14 +93,14 @@ client.on("interactionCreate", async interaction => {
     
         await interaction.editReply({content:null,embeds:[embedMessage]})
 
-        let stream = await play.stream(url)
+        let stream = await play.stream(url,{discordPlayerCompatibility:true})
         
         resource = createAudioResource(stream.stream,{
             inputType:stream.type
         })
+        //averigua por qué tarda tanto en decir 
         arrayOfSongs.push(resource)
  
-        
         if(!connection){
             console.log("this should executes one timeonly")
             connection = joinVoiceChannel({
@@ -115,11 +115,6 @@ client.on("interactionCreate", async interaction => {
             });
     
             
-        }
-
-        if(myPlayer._state.status == 'playing'){
-            console.log("already playing something")
-            return;
         }
         myPlayer.on(AudioPlayerStatus.Playing,()=> {
             console.log("playing music!")
@@ -136,6 +131,12 @@ client.on("interactionCreate", async interaction => {
             }
         })
 
+        if(myPlayer._state.status == 'playing'){
+            await interaction.channel.send("canción añadida a la cola.")
+            console.log("already playing something")
+            return;
+        }
+        
         console.log("this code executes")
 
         myPlayer.play(resource)
@@ -159,8 +160,8 @@ client.on("interactionCreate", async interaction => {
             return;
         }
         if(myPlayer._state.status == 'playing'){
-            console.log(i+1)
-            myPlayer.play(arrayOfSongs[i+1])
+            i+=1
+            myPlayer.play(arrayOfSongs[i])
             subscription = connection.subscribe(myPlayer)
             await interaction.channel.send("Skipped")
             return;
