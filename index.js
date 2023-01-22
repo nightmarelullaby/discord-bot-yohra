@@ -1,9 +1,9 @@
-const { Client, Intents } = require('discord.js');
-const {MessageEmbed } = require('discord.js');
-const { ComponentType } = require('discord.js');
+const { 
+    Client, 
+    Intents,
+    MessageEmbed,
+    ComponentType } = require('discord.js');
 
-
-const { createReadStream,createWriteStream } = require('fs');
 const play = require('play-dl');
 const { VoiceConnectionStatus, 
         joinVoiceChannel, 
@@ -13,31 +13,42 @@ const { VoiceConnectionStatus,
         PlayerSubscription,
         StreamType,
         createAudioResource} = require('@discordjs/voice');
-const { join } = require('node:path');
+const { ConnectionService } = require('discord-api-types/v10');
 
 require('dotenv').config()
 // Create a new client instance
 const myIntents = new Intents();
-myIntents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES,Intents.FLAGS.GUILD_MESSAGES,Intents.FLAGS.GUILD_MEMBERS);
+myIntents.add(
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_VOICE_STATES,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_MEMBERS);
 
 const client = new Client({ intents: myIntents });
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
-	console.log('Ready!');
+	console.log('Bot running');
 });
 let connection
+let subscription
+let myPlayer
+let resource
+let i = 0
+const arrayOfSongs = []
+
+    
 client.on("interactionCreate", async interaction => {
     if(!interaction.isCommand()) return;
 
     const {commandName} = interaction;
-    
 
     if(commandName === "join"){
 
-        const url = interaction.options.getString('url')
+
         const query = interaction.options.getString('query')
-        
+        const channel = interaction.options.getChannel('channel')
+
         let arrayWithResults = []
         let messageWithResults = ""
 
@@ -59,17 +70,16 @@ client.on("interactionCreate", async interaction => {
         
         const filter = i => {
             const regex = /[12345]/ig
+            const userAuthor = i.author.id === interaction.user.id
             const content = i.content
-            return regex.test(content)
+            if(userAuthor && regex.test(content)) return true
         };
+
         let collector = interaction.channel.createMessageCollector({filter,time:60000,max:1})
 
         collector.on("collect", async collect =>{
-        console.log(collect.content)
-        interaction.channel.send("Elegiste la opcion " + collect.content)
 
         const index = Number(collect.content) - 1 
-            console.log(index)
         const url = await arrayWithResults[index].url
         
         const embedMessage = new MessageEmbed()
@@ -81,32 +91,54 @@ client.on("interactionCreate", async interaction => {
         .setImage(arrayWithResults[index].thumbnails)
         .setFooter({ text: 'Reproduciendo...', iconURL: 'https://media.tenor.com/NCBOBzi6UdIAAAAM/2b.gif' });
     
-        
         await interaction.editReply({content:null,embeds:[embedMessage]})
 
         let stream = await play.stream(url)
-        let resource = createAudioResource(stream.stream,{
+
+        resource = createAudioResource(stream.stream,{
            inputType:stream.type
         })
-      
-        const myPlayer = createAudioPlayer({
-            behaviors:{
-                noSubscriber:NoSubscriberBehavior.Pause,
+        arrayOfSongs.push(resource)
+         
+        if(!connection){
+            connection = joinVoiceChannel({
+                channelId: channel.id,
+                guildId: interaction.guildId,
+                adapterCreator: interaction.guild.voiceAdapterCreator
+            });
+            myPlayer = createAudioPlayer({
+                behaviors:{
+                    noSubscriber:NoSubscriberBehavior.Pause,
+                }
+            });
+    
+            
+        }
+        if(myPlayer._state.status == 'playing'){
+            console.log("already playing something")
+            return;
+        }
+        myPlayer.on(AudioPlayerStatus.Playing,()=> {
+            console.log("playing music!")
+
+        })
+        myPlayer.on(AudioPlayerStatus.Idle, ()=>{
+            if(arrayOfSongs[i+1] === undefined){
+                console.log("so there is nothing next")
+                return;
             }
-        });
-        myPlayer.on(AudioPlayerStatus.Playing,()=> console.log("playing audio"))
-        myPlayer.on('error',error=>console.log(error))
+            if(!resource.ended){
+                i+=1
+                console.log("executing idle behavior")
+                myPlayer.play(arrayOfSongs[i])
+                // const subscription = connection.subscribe(myPlayer)
+            }
+        })
+
+        console.log("this code executes")
 
         myPlayer.play(resource)
-
-        const channel = interaction.options.getChannel('channel')
-        connection = joinVoiceChannel({
-            channelId: channel.id,
-            guildId: interaction.guildId,
-            adapterCreator: interaction.guild.voiceAdapterCreator
-        });
-        
-        const subscription = connection.subscribe(myPlayer)
+        subscription = connection.subscribe(myPlayer)
 
         // if(subscription){
         //     setTimeout(()=> subscription.unsubscribe(), 205_000);
@@ -120,11 +152,24 @@ client.on("interactionCreate", async interaction => {
             
     }
 
-   
-
+    if(commandName === "next"){
+        if(arrayOfSongs[i+1] === undefined){
+            await interaction.reply("There is nothing to skip")
+            return;
+        }
+        if(myPlayer._state.status == 'playing'){
+            console.log(i+1)
+            myPlayer.play(arrayOfSongs[i+1])
+            subscription = connection.subscribe(myPlayer)
+            await interaction.reply("Skipped")
+            return;
+        }
+        
+    }
     if(commandName === "disconnect"){
         await interaction.reply("Bot desconectado")
         connection.destroy()
+        connection = ""
     }
     if(commandName === "help"){
         const embedMessage = new MessageEmbed()
@@ -154,7 +199,7 @@ client.on("messageCreate",message=>{
 const videoSearch = async (params) => {
     try{
         const searched = await play.search(params, { limit : 5 })
-        return searched // YouTube Video Search but returns only 1 video.
+        return searched
 
     } catch(error){
         console.log(error)

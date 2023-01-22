@@ -29,7 +29,8 @@ const commands = [
 		// )
 	,
 	new SlashCommandBuilder().setName('disconnect').setDescription('Disconnects the from at voice channel'),						
-	new SlashCommandBuilder().setName('help').setDescription('Displays a embed with all the information of the bot')
+	new SlashCommandBuilder().setName('help').setDescription('Displays a embed with all the information of the bot'),
+	new SlashCommandBuilder().setName('next').setDescription('Plays the next music in the play list')
 ]
 	.map(command => command.toJSON());
 
