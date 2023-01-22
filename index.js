@@ -116,7 +116,7 @@ client.on("interactionCreate", async interaction => {
         }
         if(myPlayer._state.status == 'playing'){
             console.log("already playing something")
-            await interaction.reply("Canción añadida a la playlist.")
+            await interaction.send("Canción añadida a la playlist.")
             return;
         }
         myPlayer.on(AudioPlayerStatus.Playing,()=> {
@@ -155,14 +155,14 @@ client.on("interactionCreate", async interaction => {
 
     if(commandName === "next"){
         if(arrayOfSongs[i+1] === undefined){
-            await interaction.reply("There is nothing to skip")
+            await interaction.send("There is nothing to skip")
             return;
         }
         if(myPlayer._state.status == 'playing'){
             console.log(i+1)
             myPlayer.play(arrayOfSongs[i+1])
             subscription = connection.subscribe(myPlayer)
-            await interaction.reply("Skipped")
+            await interaction.send("Skipped")
             return;
         }
         
