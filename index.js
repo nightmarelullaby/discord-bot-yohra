@@ -94,13 +94,18 @@ client.on("interactionCreate", async interaction => {
         await interaction.editReply({content:null,embeds:[embedMessage]})
 
         let stream = await play.stream(url)
-
+        
         resource = createAudioResource(stream.stream,{
-           inputType:stream.type
+            inputType:stream.type
         })
         arrayOfSongs.push(resource)
-         
+        if(myPlayer._state.status == 'playing'){
+            console.log("already playing something")
+            return;
+        }
+        
         if(!connection){
+            console.log("this should executes one timeonly")
             connection = joinVoiceChannel({
                 channelId: channel.id,
                 guildId: interaction.guildId,
@@ -114,13 +119,8 @@ client.on("interactionCreate", async interaction => {
     
             
         }
-        if(myPlayer._state.status == 'playing'){
-            console.log("already playing something")
-            return;
-        }
         myPlayer.on(AudioPlayerStatus.Playing,()=> {
             console.log("playing music!")
-
         })
         myPlayer.on(AudioPlayerStatus.Idle, ()=>{
             if(arrayOfSongs[i+1] === undefined){
@@ -131,7 +131,6 @@ client.on("interactionCreate", async interaction => {
                 i+=1
                 console.log("executing idle behavior")
                 myPlayer.play(arrayOfSongs[i])
-                // const subscription = connection.subscribe(myPlayer)
             }
         })
 
@@ -154,14 +153,14 @@ client.on("interactionCreate", async interaction => {
 
     if(commandName === "next"){
         if(arrayOfSongs[i+1] === undefined){
-            // await interaction.reply("There is nothing to skip")
+            await interaction.channel.send("There is nothing to skip")
             return;
         }
         if(myPlayer._state.status == 'playing'){
             console.log(i+1)
             myPlayer.play(arrayOfSongs[i+1])
             subscription = connection.subscribe(myPlayer)
-            // await interaction.reply("Skipped")
+            await interaction.channel.send("Skipped")
             return;
         }
         
