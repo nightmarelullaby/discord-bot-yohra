@@ -99,10 +99,7 @@ client.on("interactionCreate", async interaction => {
             inputType:stream.type
         })
         arrayOfSongs.push(resource)
-        if(myPlayer._state.status == 'playing'){
-            console.log("already playing something")
-            return;
-        }
+ 
         
         if(!connection){
             console.log("this should executes one timeonly")
@@ -118,6 +115,11 @@ client.on("interactionCreate", async interaction => {
             });
     
             
+        }
+
+        if(myPlayer._state.status == 'playing'){
+            console.log("already playing something")
+            return;
         }
         myPlayer.on(AudioPlayerStatus.Playing,()=> {
             console.log("playing music!")
