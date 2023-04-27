@@ -15,7 +15,7 @@ const commands = [
 								.setRequired(true)
 								// Ensure the user can only select a TextChannel for output
 								.addChannelTypes(ChannelType.GuildVoice))
-		.addStringOption(option => 
+	.addStringOption(option => 
 			option.
 			setRequired(true)
 			.setName('query')
@@ -30,7 +30,14 @@ const commands = [
 	,
 	new SlashCommandBuilder().setName('disconnect').setDescription('Disconnects the from at voice channel'),						
 	new SlashCommandBuilder().setName('help').setDescription('Displays a embed with all the information of the bot'),
-	new SlashCommandBuilder().setName('next').setDescription('Plays the next music in the play list')
+	new SlashCommandBuilder().setName('next').setDescription('Plays the next music in the play list'),
+	new SlashCommandBuilder().setName('chat-2b').setDescription('chatgpt ia')
+	.addStringOption(option => 
+			option.
+			setRequired(true)
+			.setName('input')
+			.setDescription('Answer everything you want.')
+		)
 ]
 	.map(command => command.toJSON());
 

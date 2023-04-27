@@ -4,6 +4,8 @@ const {
     MessageEmbed,
     ComponentType } = require('discord.js');
 
+const {createChatCompletion} = require('./apis/chatgpt/create-chat-completion.js')
+
 const play = require('play-dl');
 const { VoiceConnectionStatus, 
         joinVoiceChannel, 
@@ -94,6 +96,7 @@ client.on("interactionCreate", async interaction => {
         await interaction.editReply({content:null,embeds:[embedMessage]})
 
         let stream = await play.stream(url,{discordPlayerCompatibility:true})
+        console.log(stream.type)
         
         resource = createAudioResource(stream.stream,{
             inputType:stream.type
@@ -175,10 +178,18 @@ client.on("interactionCreate", async interaction => {
     }
     if(commandName === "help"){
         const embedMessage = new MessageEmbed()
-        .setTitle("Sobre mí")
-        .setDescription("Soy 2B, miembro de la infantería de automatas YoRHa.")
-        .setImage("https://2.bp.blogspot.com/-XeVlUSBvpQM/WeoFplt1xgI/AAAAAAAABOU/A2omiTzFtacqx5LGOiIKibgoVZZWQqJpgCLcBGAs/s1600/tumblr_onau3kD4Nm1v14hqvo3_r1_500.gif")
-        await interaction.reply({embeds:[embedMessage]})
+            .setTitle("Sobre mí")
+            .setDescription("Soy 2B, miembro de la infantería de automatas YoRHa.")
+            .setImage("https://2.bp.blogspot.com/-XeVlUSBvpQM/WeoFplt1xgI/AAAAAAAABOU/A2omiTzFtacqx5LGOiIKibgoVZZWQqJpgCLcBGAs/s1600/tumblr_onau3kD4Nm1v14hqvo3_r1_500.gif")
+            await interaction.reply({embeds:[embedMessage]})
+    }
+    if(commandName === "chat-2b"){
+        const input = interaction.options.getString('input').toString()
+        
+
+        const chatGPTResponse = await createChatCompletion(input)
+        const response = chatGPTResponse.content
+        await interaction.channel.send(`En respuesta a: **${input}**.\n \n${response}`)
     }
 
 })
@@ -188,16 +199,6 @@ client.on("messageCreate",message=>{
     }
 })
 
-
-// const videoRequest = async (url) => {
-//     try{
-//         const req = await getInfo(url)
-//         const {videoDetails} = await req
-//         return videoDetails;
-//     }catch(error){
-//         console.log(error)
-//     }
-// }
 const videoSearch = async (params) => {
     try{
         const searched = await play.search(params, { limit : 5 })
