@@ -20,7 +20,6 @@ async function createChatCompletion(input){
       ]
     }
   };
-  console.log("inside cufnction",input)
   try {
     const response = await axios.request(options);
     return response.data.choices[0].message

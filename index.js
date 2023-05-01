@@ -56,7 +56,7 @@ client.on("interactionCreate", async interaction => {
 
         let videoSearchFunc = await videoSearch(query)
 
-        videoSearchFunc.map((video,index) => {
+        await videoSearchFunc.map((video,index) => {
             arrayWithResults.push({
                 title:video["title"],
                 url:video["url"],
@@ -70,14 +70,14 @@ client.on("interactionCreate", async interaction => {
         
         await interaction.reply(messageWithResults)
         
-        const filter = i => {
+        const filter = async i => {
             const regex = /[12345]/ig
             const userAuthor = i.author.id === interaction.user.id
             const content = i.content
             if(userAuthor && regex.test(content)) return true
         };
 
-        let collector = interaction.channel.createMessageCollector({filter,time:60000,max:1})
+        let collector = interaction.channel.createMessageCollector({filter,time:1000000,max:1})
 
         collector.on("collect", async collect =>{
 
@@ -95,14 +95,14 @@ client.on("interactionCreate", async interaction => {
     
         await interaction.editReply({content:null,embeds:[embedMessage]})
 
-        let stream = await play.stream(url,{discordPlayerCompatibility:true})
+        let stream = await play.stream(url,{discordPlayerCompatibility:true,quality:1})
         console.log(stream.type)
         
         resource = createAudioResource(stream.stream,{
             inputType:stream.type
         })
         //averigua por qué tarda tanto en decir 
-        arrayOfSongs.push(resource)
+        arrayOfSongs.concat(resource)
  
         if(!connection){
             console.log("this should executes one timeonly")
@@ -192,11 +192,6 @@ client.on("interactionCreate", async interaction => {
         await interaction.channel.send(`En respuesta a: **${input}**.\n \n${response}`)
     }
 
-})
-client.on("messageCreate",message=>{
-    if(message.content === "why"){
-        message.channel.send("hey, whats going up?")
-    }
 })
 
 const videoSearch = async (params) => {
