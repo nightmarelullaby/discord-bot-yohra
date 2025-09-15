@@ -17,6 +17,7 @@ const agent = ytdl.createAgent(
         pipelining: 5,
         maxRedirections: 0
     })
+const proxyAgent = ytdl.createProxyAgent({ uri: "http://127.0.0.1:8080" });
 
 export default {
 	data: new SlashCommandBuilder()
