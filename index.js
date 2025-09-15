@@ -214,7 +214,6 @@ import auth from './config.js';
 import { pathToFileURL } from 'node:url';
 import audioPlayer from './entity/audioPlayer.js';
 import { createNewEmbed } from './utils/actions.js';
-console.log(auth)
 const TOKEN = auth?.token
 
 const clientId = auth.clientId
@@ -233,11 +232,6 @@ client.once(Events.ClientReady, readyClient => {
 });
 
 client.login(TOKEN);
-// const rest = new REST().setToken(TOKEN);
-
-// rest.put(Routes.applicationCommands(clientId), { body: [] })
-// 	.then(() => console.log('Successfully deleted all application commands.'))
-// 	.catch(console.error);
 
 client.commands = new Collection();
 const __dirname = import.meta.dirname;
