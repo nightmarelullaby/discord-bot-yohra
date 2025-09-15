@@ -208,13 +208,15 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-
+import 'dotenv/config';
 import { Client, Collection, Events, GatewayIntentBits, MessageFlags, REST, Routes } from 'discord.js';
-import auth from './config.json' with { type: 'json' };
+import auth from './config.js';
 import { pathToFileURL } from 'node:url';
 import audioPlayer from './entity/audioPlayer.js';
 import { createNewEmbed } from './utils/actions.js';
+console.log(auth)
 const TOKEN = auth?.token
+
 const clientId = auth.clientId
 
 const client = new Client({ intents:
