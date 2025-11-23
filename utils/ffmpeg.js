@@ -4,12 +4,12 @@ import { PassThrough } from 'stream';
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-function convertMp3ToOggOpus(mp3Stream, inputFormat = 'webm') {
+function convertToOggOpus(mp3Stream, inputFormat = 'webm') {
    const outputStream = new PassThrough();
 
   ffmpeg()
     .input(mp3Stream)
-    .inputFormat(inputFormat)
+    // .inputFormat(inputFormat)
     .audioCodec('libopus')
     .format('ogg') // use 'ogg' for Discord compatibility
     .outputOptions([
@@ -32,5 +32,5 @@ function convertMp3ToOggOpus(mp3Stream, inputFormat = 'webm') {
 }
 
 export {
-    convertMp3ToOggOpus
+    convertToOggOpus
 };

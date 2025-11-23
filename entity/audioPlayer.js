@@ -41,7 +41,7 @@ export class CustomAudioPlayer extends EventEmitter {
     concatSong(song, interaction){
         const position = this.songs.length;
         this.songs.push({
-            path: song.path,
+            // path: song.path,
             position,
             title: song.title,
             stream: song?.stream
@@ -110,7 +110,7 @@ export class CustomAudioPlayer extends EventEmitter {
 
         this.getAudioPlayer.on(AudioPlayerStatus.Idle, () => {
             console.log('Not song playing...')
-
+            this.audioPlayer.stop();
             this.next()
 
         });
