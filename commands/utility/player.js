@@ -53,7 +53,7 @@ function getVideoInfo(url) {
 }
 
 function runYtDlp(url, args) {
-  return spawn('yt-dlp', args.concat([url]));
+  return spawn('yt-dlp.exe', args.concat([url]));
 }
 
 export default {
