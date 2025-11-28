@@ -7,6 +7,8 @@ import { pathToFileURL } from 'node:url';
 import audioPlayer from './entity/audioPlayer.js';
 import { createNewEmbed } from './utils/actions.js';
 const TOKEN = auth?.token
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 const clientId = auth.clientId
 
@@ -26,7 +28,9 @@ client.once(Events.ClientReady, readyClient => {
 client.login(TOKEN);
 
 client.commands = new Collection();
-const __dirname = import.meta.dirname;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = import.meta.dirname || dirname(__filename);
+
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 

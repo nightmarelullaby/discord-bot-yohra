@@ -13,14 +13,18 @@ import { convertToOggOpus } from '../../utils/ffmpeg.js';
 import { createNewEmbed } from '../../utils/actions.js';
 
 import { spawn } from 'node:child_process';
+import { streamToBuffer } from '../../utils/streamBuffer.js';
+import { Readable } from 'node:stream';
 
 function getDiscordAudioStream(url) {
   const ytdlp = runYtDlp(url, [
     '-o', '-',
     '-f', 'bestaudio[ext=webm]',
+    '--extract-audio',
+    '--no-progress',
+    '--quiet',
     url
     ]);
-
 
   return convertToOggOpus(ytdlp.stdout, 'webm');
 }
@@ -53,7 +57,7 @@ function getVideoInfo(url) {
 }
 
 function runYtDlp(url, args) {
-  return spawn('yt-dlp.exe', args.concat([url]));
+  return spawn('yt-dlp', args.concat([url]));
 }
 
 export default {
@@ -70,7 +74,8 @@ export default {
         const __dirname = import.meta.dirname;
         const url = interaction.options.getString('url') ?? 'No reason provided';
 
-        const oggOpusStream = getDiscordAudioStream(url);
+        await interaction.deferReply();
+        const oggOpusStream = await getDiscordAudioStream(url);
 
         let connection = joinVoiceChannel({
             channelId: interaction.member.voice.channel.id,
@@ -79,7 +84,6 @@ export default {
         });
 
         audioPlayer.setConnection(connection);
-        await interaction.deferReply();
         const videoURL = url;
 
         const info = await getVideoInfo(videoURL);
