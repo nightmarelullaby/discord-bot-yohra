@@ -18,16 +18,25 @@ import { Readable } from 'node:stream';
 
 function getDiscordAudioStream(url) {
   const ytdlp = runYtDlp(url, [
-    '-o', '-',
+     '-o', '-',
     '-f', 'bestaudio[ext=webm]',
-    '--extract-audio',
     '--no-progress',
+    '--no-warnings',
     '--quiet',
-    url
     ]);
 
+  const test = runYtDlp(url, [
+    '-v',
+  '-o', '-',
+  '-f', 'bestaudio[ext=webm]',
+  '--no-progress',
+  '--no-warnings',
+  '--quiet',
+  ]);
+  console.log(test.stdout)
   return convertToOggOpus(ytdlp.stdout, 'webm');
 }
+
 function getVideoInfo(url) {
   return new Promise((resolve, reject) => {
     const ls = runYtDlp(url, ['--print-json', '-q', '--skip-download']);
@@ -75,7 +84,7 @@ export default {
         const url = interaction.options.getString('url') ?? 'No reason provided';
 
         await interaction.deferReply();
-        const oggOpusStream = await getDiscordAudioStream(url);
+        const oggOpusStream = getDiscordAudioStream(url);
 
         let connection = joinVoiceChannel({
             channelId: interaction.member.voice.channel.id,
@@ -89,12 +98,12 @@ export default {
         const info = await getVideoInfo(videoURL);
         const videoTitle = info.title.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_'); // Sanitize title for filename
         // const musicPath = path.join(__dirname, `../../songs/${videoTitle}.mp3`)
-
         audioPlayer.concatSong({
             stream: oggOpusStream,
             // path: musicPath,
             title: videoTitle
         }, interaction)
+
         console.log(audioPlayer.getPlaylist())
         await interaction.editReply({ embeds: [createNewEmbed()] });
 
