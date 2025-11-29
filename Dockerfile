@@ -34,4 +34,4 @@ RUN ffmpeg -version
 
 COPY . .
 
-CMD ["node", "index.js"]
+CMD ["node", "--max-old-space-size=384", "index.js"]
