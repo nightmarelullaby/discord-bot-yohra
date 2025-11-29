@@ -79,6 +79,7 @@ export class CustomAudioPlayer extends EventEmitter {
         prevSong.stream.end();
         if (prevSong.stream && !prevSong.stream.destroyed) {
             prevSong.stream.destroy();
+            prevSong.stream = null;
         }
     }
 
