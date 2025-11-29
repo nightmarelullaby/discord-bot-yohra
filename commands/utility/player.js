@@ -16,6 +16,46 @@ import { spawn } from 'node:child_process';
 import { streamToBuffer } from '../../utils/streamBuffer.js';
 import { Readable } from 'node:stream';
 
+function logErrors(url) {
+  const test = runYtDlp(url, [
+    '-v',
+  '-o', '-',
+  '-f', 'bestaudio[ext=webm]',
+  '--no-progress',
+  '--no-warnings',
+  '--quiet',
+  ]);
+  let ffmpegErrorOutput;
+
+  test.stderr.on('data', (data) => {
+      const errorString = data.toString();
+      ffmpegErrorOutput += errorString;
+
+      if (errorString.toLowerCase().includes('error')) {
+          console.error(`FFmpeg STDERR: ${errorString.trim()}`);
+      }
+  });
+
+  test.on('close', (code) => {
+        if (code !== 0) {
+            console.error('--- FFmpeg Process Failed ---');
+            console.error(`Exit Code: ${code}`);
+            console.error('--- FFmpeg Diagnostics (STDERR) ---');
+            console.error(ffmpegErrorOutput);
+            console.error('-----------------------------------');
+            outputStream.emit('error', new Error(`FFmpeg process exited with code ${code}. Details:\n${ffmpegErrorOutput}`));
+            outputStream.destroy();
+        } else {
+            console.log('FFmpeg process finished successfully.');
+            outputStream.end();
+        }
+    });
+
+    test.on('error', (err) => {
+        console.error(`Failed to start FFmpeg process: ${err.message}`);
+    });
+}
+
 function getDiscordAudioStream(url) {
   const ytdlp = runYtDlp(url, [
      '-o', '-',
@@ -25,15 +65,7 @@ function getDiscordAudioStream(url) {
     '--quiet',
     ]);
 
-  const test = runYtDlp(url, [
-    '-v',
-  '-o', '-',
-  '-f', 'bestaudio[ext=webm]',
-  '--no-progress',
-  '--no-warnings',
-  '--quiet',
-  ]);
-  console.log(test.stdout)
+  logErrors(url);
   return convertToOggOpus(ytdlp.stdout, 'webm');
 }
 
@@ -104,7 +136,6 @@ export default {
             title: videoTitle
         }, interaction)
 
-        console.log(audioPlayer.getPlaylist())
         await interaction.editReply({ embeds: [createNewEmbed()] });
 
 	},
