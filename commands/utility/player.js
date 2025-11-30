@@ -109,8 +109,7 @@ export default {
             option.setName('url')
                 .setDescription('URL of the video')
                 .setRequired(true)
-            )
-            ,
+            ),
 	async execute(interaction) {
         const __dirname = import.meta.dirname;
         const url = interaction.options.getString('url') ?? 'No reason provided';
