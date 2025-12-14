@@ -64,14 +64,8 @@ client.on(Events.InteractionCreate, async interaction => {
 		return;
 	}
 
-	audioPlayer.on('playingsong', async (title, interactionId) => {
-    });
-
     audioPlayer.on('addqueue', async (interaction) => {
         lastCachedInteraction = interaction;
-    });
-
-    audioPlayer.on('notnextsong', async (interactionId) => {
     });
 
     audioPlayer.once('skip', async (interaction) => {

@@ -15,9 +15,11 @@ import { createNewEmbed } from '../../utils/actions.js';
 import { spawn } from 'node:child_process';
 import { streamToBuffer } from '../../utils/streamBuffer.js';
 import { Readable } from 'node:stream';
+import { cookiesPath } from '../../cookies/index.js';
 
 function logErrors(url) {
   const test = runYtDlp(url, [
+    '--cookies', cookiesPath,
     '-v',
   '-o', '-',
   '-f', 'bestaudio[ext=webm]',
@@ -43,11 +45,8 @@ function logErrors(url) {
             console.error('--- FFmpeg Diagnostics (STDERR) ---');
             console.error(ffmpegErrorOutput);
             console.error('-----------------------------------');
-            outputStream.emit('error', new Error(`FFmpeg process exited with code ${code}. Details:\n${ffmpegErrorOutput}`));
-            outputStream.destroy();
         } else {
             console.log('FFmpeg process finished successfully.');
-            outputStream.end();
         }
     });
 
@@ -55,23 +54,29 @@ function logErrors(url) {
         console.error(`Failed to start FFmpeg process: ${err.message}`);
     });
 }
-
+const cookiesArgs = [
+    '--cookies', cookiesPath,
+    '--js-runtimes', 'node'
+]
+console.log(cookiesPath)
 function getDiscordAudioStream(url) {
   const ytdlp = runYtDlp(url, [
-     '-o', '-',
+    ...cookiesArgs,
+    '-o', '-',
     '-f', 'bestaudio[ext=webm]',
     '--no-progress',
     '--no-warnings',
     '--quiet',
     ]);
 
-  logErrors(url);
   return convertToOggOpus(ytdlp.stdout, 'webm');
 }
 
 function getVideoInfo(url) {
   return new Promise((resolve, reject) => {
-    const ls = runYtDlp(url, ['--print-json', '-q', '--skip-download']);
+    const ls = runYtDlp(url, [
+    ...cookiesArgs,
+    '--print-json', '-q', '--skip-download']);
     let buffer = '';
 
     ls.stdout.on('data', async (data) => {
@@ -125,10 +130,11 @@ export default {
 
         audioPlayer.setConnection(connection);
         const videoURL = url;
-
+        console.log(videoURL)
         const info = await getVideoInfo(videoURL);
         const videoTitle = info.title.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_'); // Sanitize title for filename
         // const musicPath = path.join(__dirname, `../../songs/${videoTitle}.mp3`)
+        console.log(videoTitle)
         audioPlayer.concatSong({
             stream: oggOpusStream,
             // path: musicPath,
